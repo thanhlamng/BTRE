@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -39,7 +40,7 @@
         .a4-container { 
           width: var(--a4-width); 
           min-height: 297mm;
-          padding: 20mm 15mm 20mm 25mm; /* Lề chuẩn: Trái 25, Phải 15, Trên 20, Dưới 20 */
+          padding: 20mm 15mm 20mm 25mm;
           background: white;
           box-sizing: border-box;
           margin: 0 auto;
@@ -62,14 +63,12 @@
             vertical-align: top;
         }
 
-        /* Fix lỗi MathJax đè chữ khi render */
         mjx-container {
             display: inline-block !important;
             margin: 0 0.1em !important;
             line-height: 0 !important;
         }
 
-        /* CSS dành riêng cho việc IN/XUẤT PDF */
         @media print {
             @page { 
                 size: A4; 
@@ -91,13 +90,8 @@
                 padding: 20mm 15mm 20mm 25mm !important;
                 page-break-after: always;
             }
-            /* Đảm bảo MathJax hiển thị đúng khi in */
-            mjx-container[display="true"] {
-                margin: 1em 0 !important;
-            }
         }
 
-        /* Hiệu ứng bóng đổ cho preview */
         .preview-shadow {
             box-shadow: 0 0 20px rgba(0,0,0,0.1), 0 0 40px rgba(0,0,0,0.05);
         }
@@ -105,6 +99,7 @@
 <script type="importmap">
 {
   "imports": {
+    "@/": "./",
     "react": "https://esm.sh/react@^19.2.3",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/",
