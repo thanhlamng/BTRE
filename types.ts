@@ -10,7 +10,9 @@ export interface DetailedReviewItem {
   questionNo: string;
   questionReview: string; 
   observation: string;     
-  suggestion: string;      
+  suggestion: string;
+  answer?: string;      // Đáp án do AI tạo hoặc trích xuất
+  explanation?: string; // Lời giải chi tiết
 }
 
 export interface AuditData {
@@ -21,14 +23,14 @@ export interface AuditData {
   totalQuestions: number;
   reportId: string;
   auditorName: string;
-  isAIGeneratedMatrix?: boolean; // Cờ đánh dấu ma trận do AI tự tạo
+  isAIGeneratedMatrix?: boolean;
   questionInventory?: string[];
   overview: {
     scientific: string;
     pedagogical: string;
     accuracy: string;
     matrixAlignment: string;
-    improvementSuggestions?: string; // Thêm góp ý nâng cao
+    improvementSuggestions?: string;
   };
   detailedReviews: {
     part1: DetailedReviewItem[];

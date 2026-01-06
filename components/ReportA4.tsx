@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import { AuditData, DetailedReviewItem } from '../types';
 
@@ -41,32 +42,40 @@ export const ReportA4: React.FC<ReportA4Props> = ({ data, onUpdate, isEditing })
   const renderTableRows = (items: DetailedReviewItem[] | undefined, partKey: string) => {
     if (!items || items.length === 0) return (
       <tr>
-        <td colSpan={4} className="text-center italic text-[11pt] py-4">
-          (Không ghi nhận lỗi sai ở phần này)
+        <td colSpan={5} className="text-center italic text-[10pt] py-4">
+          (Không ghi nhận lỗi sai hoặc phản biện cho phần này)
         </td>
       </tr>
     );
 
     return items.map((item, idx) => (
       <tr key={`${partKey}-${idx}`}>
-        <td className="text-center font-bold text-[11pt]">{item.questionNo.replace('Câu ', '')}</td>
+        <td className="text-center font-bold text-[10pt]">{item.questionNo.replace('Câu ', '')}</td>
         <td 
           contentEditable={isEditing}
           suppressContentEditableWarning={true}
           onBlur={(e) => onUpdate?.(`detailedReviews.${partKey}.${idx}.questionReview`, e.currentTarget.innerText)}
-          className="text-[11pt]"
+          className="text-[10pt]"
         >{item.questionReview}</td>
         <td 
           contentEditable={isEditing}
           suppressContentEditableWarning={true}
           onBlur={(e) => onUpdate?.(`detailedReviews.${partKey}.${idx}.observation`, e.currentTarget.innerText)}
-          className="text-[11pt] text-justify leading-relaxed"
+          className="text-[10pt] text-justify"
         >{item.observation}</td>
+        <td className="text-[10pt] bg-slate-50/50">
+           <div className="font-bold text-blue-800 mb-1 border-b border-blue-100 pb-1">
+             Đáp án: {renderEditable(`detailedReviews.${partKey}.${idx}.answer`, item.answer || 'Chưa rõ')}
+           </div>
+           <div className="text-[9.5pt] leading-relaxed py-1 whitespace-pre-wrap">
+             {renderEditable(`detailedReviews.${partKey}.${idx}.explanation`, item.explanation || 'Đang cập nhật...')}
+           </div>
+        </td>
         <td 
           contentEditable={isEditing}
           suppressContentEditableWarning={true}
           onBlur={(e) => onUpdate?.(`detailedReviews.${partKey}.${idx}.suggestion`, e.currentTarget.innerText)}
-          className="text-[11pt] italic leading-relaxed"
+          className="text-[10pt] italic"
         >{item.suggestion}</td>
       </tr>
     ));
@@ -77,44 +86,38 @@ export const ReportA4: React.FC<ReportA4Props> = ({ data, onUpdate, isEditing })
       id="audit-report-a4" 
       ref={containerRef}
       className={`a4-container bg-white font-report text-black mx-auto ${isEditing ? '' : 'preview-shadow'}`}
-      style={{ fontSize: '13pt' }}
+      style={{ fontSize: '12pt' }}
     >
-      <div className="flex justify-between items-start mb-8">
-        <div className="text-center font-bold text-[11pt] leading-tight">
+      <div className="flex justify-between items-start mb-6">
+        <div className="text-center font-bold text-[10pt] leading-tight">
           <p className="uppercase">SỞ GD&ĐT ...........................</p>
           <p className="uppercase">TRƯỜNG THPT ......................</p>
           <div className="w-24 h-[0.7pt] bg-black mx-auto mt-2"></div>
         </div>
-        <div className="text-center font-bold text-[11pt] leading-tight">
+        <div className="text-center font-bold text-[10pt] leading-tight">
           <p className="uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
           <p className="normal-case">Độc lập - Tự do - Hạnh phúc</p>
           <div className="w-40 h-[0.7pt] bg-black mx-auto mt-2"></div>
         </div>
       </div>
 
-      <div className="text-center mb-10">
-        <h1 className="text-[16pt] font-bold uppercase tracking-tight">BIÊN BẢN PHẢN BIỆN ĐỀ THI</h1>
-        <div className="mt-4 flex flex-wrap justify-center gap-x-12 text-[13pt] italic">
+      <div className="text-center mb-8">
+        <h1 className="text-[15pt] font-bold uppercase tracking-tight">BIÊN BẢN PHẢN BIỆN ĐỀ THI & ĐÁP ÁN</h1>
+        <div className="mt-3 flex flex-wrap justify-center gap-x-10 text-[12pt] italic">
           <p>Môn: <b>{renderEditable('subject', data.subject)}</b></p>
           <p>Khối: <b>{renderEditable('grade', data.grade)}</b></p>
-          <p>Học kỳ: <b>{renderEditable('semester', data.semester)}</b></p>
           <p>Mã đề: <b>{renderEditable('examCode', data.examCode)}</b></p>
         </div>
       </div>
 
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-bold text-[14pt] uppercase tracking-wide">I. THỐNG KÊ TỶ LỆ CÂU HỎI</h2>
-          {data.isAIGeneratedMatrix && (
-            <span className="text-[9pt] bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-200 font-bold italic">
-              * Ma trận gợi ý bởi AI
-            </span>
-          )}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="font-bold text-[12pt] uppercase tracking-wide">I. THỐNG KÊ TỶ LỆ CÂU HỎI</h2>
         </div>
-        <table className="mb-4">
+        <table className="mb-3">
           <thead>
-            <tr className="font-bold text-center bg-gray-50">
-              <th className="w-[35%]">{data.isAIGeneratedMatrix ? "Cấu trúc gợi ý (AI)" : "Ma trận gốc"}</th>
+            <tr className="font-bold text-center bg-gray-50 text-[10pt]">
+              <th className="w-[30%]">Hạng mục</th>
               <th>NB</th>
               <th>TH</th>
               <th>VD</th>
@@ -122,21 +125,17 @@ export const ReportA4: React.FC<ReportA4Props> = ({ data, onUpdate, isEditing })
               <th>Tổng</th>
             </tr>
           </thead>
-          <tbody className="text-center">
+          <tbody className="text-center text-[11pt]">
             <tr>
-              <td className="text-left font-bold px-3 italic text-blue-800">
-                {data.isAIGeneratedMatrix ? "Chuẩn đề xuất" : "Ma trận dự kiến"}
-              </td>
+              <td className="text-left px-3 italic">Ma trận chuẩn</td>
               <td>{data.stats.matrix.nb}</td>
               <td>{data.stats.matrix.th}</td>
               <td>{data.stats.matrix.vd}</td>
               <td>{data.stats.matrix.vdc}</td>
-              <td className="font-bold">
-                {data.stats.matrix.nb + data.stats.matrix.th + data.stats.matrix.vd + data.stats.matrix.vdc}
-              </td>
+              <td className="font-bold">{data.stats.matrix.nb + data.stats.matrix.th + data.stats.matrix.vd + data.stats.matrix.vdc}</td>
             </tr>
             <tr>
-              <td className="text-left font-bold px-3">Đề thi thực tế</td>
+              <td className="text-left font-bold px-3">Thực tế đề thi</td>
               <td>{data.stats.actual.nb}</td>
               <td>{data.stats.actual.th}</td>
               <td>{data.stats.actual.vd}</td>
@@ -145,37 +144,32 @@ export const ReportA4: React.FC<ReportA4Props> = ({ data, onUpdate, isEditing })
             </tr>
           </tbody>
         </table>
-        <p className="text-[12pt] italic leading-relaxed">
-          <b>Nhận xét tỷ lệ:</b> {renderEditable('overview.matrixAlignment', data.overview.matrixAlignment)}
-        </p>
+        <p className="text-[11pt] italic"><b>Nhận xét tỷ lệ:</b> {renderEditable('overview.matrixAlignment', data.overview.matrixAlignment)}</p>
       </div>
 
-      <div className="mb-8">
-        <h2 className="font-bold text-[14pt] mb-4 uppercase tracking-wide">II. ĐÁNH GIÁ CHUYÊN MÔN TỔNG QUAN</h2>
-        <div className="space-y-3 ml-2">
-          <p><span className="font-bold">1. Tính khoa học & Logic:</span> {renderEditable('overview.scientific', data.overview.scientific)}</p>
-          <p><span className="font-bold">2. Tính sư phạm & Ngôn từ:</span> {renderEditable('overview.pedagogical', data.overview.pedagogical)}</p>
-          <p><span className="font-bold">3. Độ chính xác kiến thức:</span> {renderEditable('overview.accuracy', data.overview.accuracy)}</p>
-          {data.overview.improvementSuggestions && (
-            <div className="mt-4 p-3 bg-blue-50/50 border-l-4 border-blue-600 rounded-r-lg">
-              <p className="font-bold text-blue-900 mb-1">Gợi ý nâng cao chuẩn đề thi:</p>
-              <div className="italic text-[12pt]">{renderEditable('overview.improvementSuggestions', data.overview.improvementSuggestions)}</div>
-            </div>
-          )}
+      <div className="mb-6">
+        <h2 className="font-bold text-[12pt] mb-2 uppercase tracking-wide">II. ĐÁNH GIÁ CHUYÊN MÔN TỔNG QUAN</h2>
+        <div className="space-y-2 ml-2 text-[11pt]">
+          <p><span className="font-bold">1. Tính khoa học:</span> {renderEditable('overview.scientific', data.overview.scientific)}</p>
+          <p><span className="font-bold">2. Tính sư phạm:</span> {renderEditable('overview.pedagogical', data.overview.pedagogical)}</p>
+          <p><span className="font-bold">3. Độ chính xác:</span> {renderEditable('overview.accuracy', data.overview.accuracy)}</p>
         </div>
       </div>
 
-      <div className="mb-10">
-        <h2 className="font-bold text-[14pt] mb-6 uppercase tracking-wide">III. CHI TIẾT PHẢN BIỆN LỖI SAI</h2>
+      <div className="mb-8">
+        <h2 className="font-bold text-[12pt] mb-4 uppercase tracking-wide">III. CHI TIẾT PHẢN BIỆN & ĐÁP ÁN GỢI Ý</h2>
+        
+        {/* Định nghĩa tỷ lệ các cột cho tất cả các bảng phía dưới */}
         <div className="mb-6">
-          <p className="font-bold mb-2 italic underline text-[11pt]">Phần I: Câu hỏi trắc nghiệm nhiều lựa chọn</p>
-          <table className="table-fixed">
+          <p className="font-bold mb-1 italic text-[11pt] text-blue-900 border-l-4 border-blue-600 pl-2">Phần I: Câu hỏi trắc nghiệm (Chọn 1 đáp án đúng)</p>
+          <table>
             <thead>
-              <tr className="font-bold text-center bg-gray-50">
-                <th className="w-[10%]">Câu</th>
-                <th className="w-[25%] text-left">Nội dung</th>
-                <th className="w-[35%] text-left">Lỗi sai</th>
-                <th className="w-[30%] text-left">Góp ý</th>
+              <tr className="font-bold text-center bg-gray-50 text-[10pt]">
+                <th className="w-[5%]">Câu</th>
+                <th className="w-[15%] text-left">Nội dung</th>
+                <th className="w-[20%] text-left">Nhận xét lỗi</th>
+                <th className="w-[45%] text-left">Đáp án & Lời giải chi tiết</th>
+                <th className="w-[15%] text-left">Đề xuất</th>
               </tr>
             </thead>
             <tbody>{renderTableRows(data.detailedReviews?.part1, 'part1')}</tbody>
@@ -183,14 +177,15 @@ export const ReportA4: React.FC<ReportA4Props> = ({ data, onUpdate, isEditing })
         </div>
 
         <div className="mb-6">
-          <p className="font-bold mb-2 italic underline text-[11pt]">Phần II: Câu hỏi trắc nghiệm Đúng/Sai</p>
-          <table className="table-fixed">
+          <p className="font-bold mb-1 italic text-[11pt] text-blue-900 border-l-4 border-blue-600 pl-2">Phần II: Câu hỏi trắc nghiệm Đúng/Sai</p>
+          <table>
             <thead>
-              <tr className="font-bold text-center bg-gray-50">
-                <th className="w-[10%]">Câu</th>
-                <th className="w-[25%] text-left">Nội dung</th>
-                <th className="w-[35%] text-left">Lỗi sai</th>
-                <th className="w-[30%] text-left">Góp ý</th>
+              <tr className="font-bold text-center bg-gray-50 text-[10pt]">
+                <th className="w-[5%]">Câu</th>
+                <th className="w-[15%] text-left">Nội dung</th>
+                <th className="w-[20%] text-left">Nhận xét lỗi</th>
+                <th className="w-[45%] text-left">Đáp án & Lời giải chi tiết</th>
+                <th className="w-[15%] text-left">Đề xuất</th>
               </tr>
             </thead>
             <tbody>{renderTableRows(data.detailedReviews?.part2, 'part2')}</tbody>
@@ -198,14 +193,15 @@ export const ReportA4: React.FC<ReportA4Props> = ({ data, onUpdate, isEditing })
         </div>
 
         <div>
-          <p className="font-bold mb-2 italic underline text-[11pt]">Phần III: Câu hỏi trả lời ngắn</p>
-          <table className="table-fixed">
+          <p className="font-bold mb-1 italic text-[11pt] text-blue-900 border-l-4 border-blue-600 pl-2">Phần III: Câu hỏi trắc nghiệm trả lời ngắn</p>
+          <table>
             <thead>
-              <tr className="font-bold text-center bg-gray-50">
-                <th className="w-[10%]">Câu</th>
-                <th className="w-[25%] text-left">Nội dung</th>
-                <th className="w-[35%] text-left">Lỗi sai</th>
-                <th className="w-[30%] text-left">Góp ý</th>
+              <tr className="font-bold text-center bg-gray-50 text-[10pt]">
+                <th className="w-[5%]">Câu</th>
+                <th className="w-[15%] text-left">Nội dung</th>
+                <th className="w-[20%] text-left">Nhận xét lỗi</th>
+                <th className="w-[45%] text-left">Đáp án & Lời giải chi tiết</th>
+                <th className="w-[15%] text-left">Đề xuất</th>
               </tr>
             </thead>
             <tbody>{renderTableRows(data.detailedReviews?.part3, 'part3')}</tbody>
@@ -213,16 +209,16 @@ export const ReportA4: React.FC<ReportA4Props> = ({ data, onUpdate, isEditing })
         </div>
       </div>
 
-      <div className="mt-16 grid grid-cols-2 gap-10 text-center">
-        <div className="flex flex-col items-center">
-          <p className="font-bold uppercase mb-20 text-[11pt]">Người ra đề</p>
-          <p className="italic text-[10pt]">(Ký và ghi rõ họ tên)</p>
+      <div className="mt-12 grid grid-cols-2 gap-10 text-center">
+        <div>
+          <p className="font-bold uppercase mb-16 text-[10pt]">Người ra đề</p>
+          <p className="italic text-[9pt]">(Ký và ghi rõ họ tên)</p>
         </div>
-        <div className="flex flex-col items-center">
-          <p className="italic mb-2 text-[11pt]">Ngày {data.auditDate}</p>
-          <p className="font-bold uppercase mb-20 text-[11pt]">Người phản biện</p>
-          <div className="border-b border-black/40 px-6 min-w-[200px] font-bold text-[12pt]">
-            {renderEditable('auditorName', data.auditorName || '(Ký tên)')}
+        <div>
+          <p className="italic mb-1 text-[10pt]">Ngày {data.auditDate}</p>
+          <p className="font-bold uppercase mb-16 text-[10pt]">Người phản biện</p>
+          <div className="border-b border-black/40 px-6 font-bold text-[11pt]">
+            {renderEditable('auditorName', data.auditorName || '(Họ tên)')}
           </div>
         </div>
       </div>

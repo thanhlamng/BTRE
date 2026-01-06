@@ -64,11 +64,10 @@ export const generateAuditReport = async (
   matrixFile: File | null,
   customApiKey?: string
 ): Promise<AuditData> => {
-  // Ưu tiên customApiKey, nếu không có mới dùng process.env.API_KEY
   const apiKey = customApiKey || process.env.API_KEY;
   
   if (!apiKey) {
-    throw new Error("Vui lòng cấu hình API Key trong mục Cài đặt trước khi bắt đầu.");
+    throw new Error("Vui lòng cấu hình API Key trong mục Cài đặt (biểu tượng răng cưa) trước khi bắt đầu.");
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -85,15 +84,22 @@ export const generateAuditReport = async (
       ? { text: `--- NỘI DUNG ĐỀ THI ---\n${examContent.text}` }
       : { inlineData: examContent.inlineData! };
 
-    const hasMatrix = !!matrixFile;
     const matrixPart = matrixContent.text 
       ? { text: `--- DỮ LIỆU MA TRẬN ---\n${matrixContent.text}` }
       : { inlineData: matrixContent.inlineData! };
 
     const promptText = `
-      BỐI CẢNH: Chuyên gia Khảo thí THPT Việt Nam.
-      NHIỆM VỤ: Phân tích Đề thi và Ma trận.
-      QUY TẮC: Trả về JSON theo schema. Công thức dùng $ hoặc $$.
+      BỐI CẢNH: Chuyên gia Khảo thí cấp cao tại Việt Nam.
+      NHIỆM VỤ: Phản biện đề thi và ĐẶC BIỆT chú ý phần đáp án.
+      
+      YÊU CẦU QUAN TRỌNG VỀ ĐÁP ÁN:
+      - Nếu đề thi CHƯA có đáp án hoặc lời giải chi tiết, bạn BẮT BUỘC phải giải đề này và cung cấp đáp án chính xác cùng lời giải logic cho từng câu vào trường "answer" và "explanation".
+      - Nếu đã có đáp án, hãy kiểm tra tính đúng đắn của nó.
+      
+      YÊU CẦU VỀ ĐỊNH DẠNG:
+      - Trả về JSON theo đúng schema. 
+      - Các công thức toán học/hóa học phải dùng LaTeX (inline: $, block: $$). 
+      - Ký tự gạch chéo ngược trong JSON phải được double escape: \\\\.
     `;
 
     const response = await ai.models.generateContent({
@@ -122,14 +128,15 @@ export const generateAuditReport = async (
                 accuracy: { type: Type.STRING },
                 matrixAlignment: { type: Type.STRING },
                 improvementSuggestions: { type: Type.STRING }
-              }
+              },
+              required: ["scientific", "pedagogical", "accuracy", "matrixAlignment"]
             },
             detailedReviews: {
               type: Type.OBJECT,
               properties: {
-                part1: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { questionNo: { type: Type.STRING }, questionReview: { type: Type.STRING }, observation: { type: Type.STRING }, suggestion: { type: Type.STRING } } } },
-                part2: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { questionNo: { type: Type.STRING }, questionReview: { type: Type.STRING }, observation: { type: Type.STRING }, suggestion: { type: Type.STRING } } } },
-                part3: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { questionNo: { type: Type.STRING }, questionReview: { type: Type.STRING }, observation: { type: Type.STRING }, suggestion: { type: Type.STRING } } } }
+                part1: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { questionNo: { type: Type.STRING }, questionReview: { type: Type.STRING }, observation: { type: Type.STRING }, suggestion: { type: Type.STRING }, answer: { type: Type.STRING }, explanation: { type: Type.STRING } } } },
+                part2: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { questionNo: { type: Type.STRING }, questionReview: { type: Type.STRING }, observation: { type: Type.STRING }, suggestion: { type: Type.STRING }, answer: { type: Type.STRING }, explanation: { type: Type.STRING } } } },
+                part3: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { questionNo: { type: Type.STRING }, questionReview: { type: Type.STRING }, observation: { type: Type.STRING }, suggestion: { type: Type.STRING }, answer: { type: Type.STRING }, explanation: { type: Type.STRING } } } }
               }
             },
             stats: {
@@ -147,9 +154,9 @@ export const generateAuditReport = async (
     });
 
     const jsonStr = response.text?.trim();
-    if (!jsonStr) throw new Error("AI không phản hồi.");
+    if (!jsonStr) throw new Error("AI không phản hồi dữ liệu.");
     return JSON.parse(jsonStr) as AuditData;
   } catch (error: any) {
-    throw new Error(error.message || "Lỗi xử lý.");
+    throw new Error(error.message || "Lỗi xử lý phản biện.");
   }
 };
