@@ -89,17 +89,17 @@ export const generateAuditReport = async (
       : { inlineData: matrixContent.inlineData! };
 
     const promptText = `
-      BỐI CẢNH: Chuyên gia Khảo thí cấp cao tại Việt Nam.
-      NHIỆM VỤ: Phản biện đề thi và ĐẶC BIỆT chú ý phần đáp án.
-      
-      YÊU CẦU QUAN TRỌNG VỀ ĐÁP ÁN:
-      - Nếu đề thi CHƯA có đáp án hoặc lời giải chi tiết, bạn BẮT BUỘC phải giải đề này và cung cấp đáp án chính xác cùng lời giải logic cho từng câu vào trường "answer" và "explanation".
-      - Nếu đã có đáp án, hãy kiểm tra tính đúng đắn của nó.
-      
-      YÊU CẦU VỀ ĐỊNH DẠNG:
-      - Trả về JSON theo đúng schema. 
-      - Các công thức toán học/hóa học phải dùng LaTeX (inline: $, block: $$). 
-      - Ký tự gạch chéo ngược trong JSON phải được double escape: \\\\.
+      BỐI CẢNH: Bạn là một Chuyên gia Giáo dục Việt Nam, có nhiệm vụ "Soi lỗi" đề thi và "Giải đề" một cách chuyên nghiệp.
+
+      QUY TẮC PHÂN LOẠI DỮ LIỆU (TUYỆT ĐỐI TUÂN THỦ):
+      - 'answer': Phải có giá trị rõ ràng (VD: "A", "B", "Đúng - Sai - Đúng"). CẤM ghi "Chưa rõ".
+      - 'explanation': Đây là vùng QUAN TRỌNG NHẤT. Bạn phải trình bày lời giải chi tiết, phân tích kiến thức, tại sao chọn đáp án đó. PHẢI CÓ NỘI DUNG DÀI VÀ ĐẦY ĐỦ Ở ĐÂY.
+      - 'observation': Chỉ dùng để ghi lỗi của đề bài (sai font, sai kiến thức, câu hỏi mơ hồ). Nếu đề không lỗi, ghi "Đề đạt yêu cầu". CẤM ghi lời giải vào đây.
+      - 'suggestion': Chỉ dùng để ghi đề xuất sửa đổi câu hỏi để hay hơn. CẤM đưa lời giải vào đây.
+
+      YÊU CẦU: Nếu bạn thấy mình đang định viết kiến thức giải bài vào cột 'suggestion', hãy DỪNG LẠI và đưa toàn bộ nội dung đó vào cột 'explanation'.
+
+      ĐỊNH DẠNG: Trả về JSON theo đúng Schema. Sử dụng LaTeX cho công thức.
     `;
 
     const response = await ai.models.generateContent({
@@ -108,6 +108,7 @@ export const generateAuditReport = async (
         parts: [{ text: promptText }, examPart, matrixPart]
       },
       config: {
+        thinkingConfig: { thinkingBudget: 4000 },
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
@@ -119,7 +120,6 @@ export const generateAuditReport = async (
             totalQuestions: { type: Type.NUMBER },
             reportId: { type: Type.STRING },
             auditorName: { type: Type.STRING },
-            isAIGeneratedMatrix: { type: Type.BOOLEAN },
             overview: {
               type: Type.OBJECT,
               properties: {
@@ -128,8 +128,7 @@ export const generateAuditReport = async (
                 accuracy: { type: Type.STRING },
                 matrixAlignment: { type: Type.STRING },
                 improvementSuggestions: { type: Type.STRING }
-              },
-              required: ["scientific", "pedagogical", "accuracy", "matrixAlignment"]
+              }
             },
             detailedReviews: {
               type: Type.OBJECT,
@@ -155,7 +154,16 @@ export const generateAuditReport = async (
 
     const jsonStr = response.text?.trim();
     if (!jsonStr) throw new Error("AI không phản hồi dữ liệu.");
-    return JSON.parse(jsonStr) as AuditData;
+    const parsed = JSON.parse(jsonStr) as AuditData;
+    
+    if (!parsed.stats) {
+      parsed.stats = {
+        matrix: { nb: 0, th: 0, vd: 0, vdc: 0 },
+        actual: { nb: 0, th: 0, vd: 0, vdc: 0 }
+      };
+    }
+
+    return parsed;
   } catch (error: any) {
     throw new Error(error.message || "Lỗi xử lý phản biện.");
   }

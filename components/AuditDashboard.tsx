@@ -13,11 +13,12 @@ export const AuditDashboard: React.FC<AuditDashboardProps> = ({ data: initialDat
   const [data, setData] = useState<AuditData>(initialData);
   const [isEditing, setIsEditing] = useState(false);
 
+  // Thêm optional chaining và giá trị mặc định 0 để tránh lỗi 'undefined'
   const chartData = [
-    { name: 'Nhận biết', value: data.stats.actual.nb, color: '#3b82f6' },
-    { name: 'Thông hiểu', value: data.stats.actual.th, color: '#10b981' },
-    { name: 'Vận dụng', value: data.stats.actual.vd, color: '#f59e0b' },
-    { name: 'Vận dụng cao', value: data.stats.actual.vdc, color: '#ef4444' },
+    { name: 'Nhận biết', value: data.stats?.actual?.nb ?? 0, color: '#3b82f6' },
+    { name: 'Thông hiểu', value: data.stats?.actual?.th ?? 0, color: '#10b981' },
+    { name: 'Vận dụng', value: data.stats?.actual?.vd ?? 0, color: '#f59e0b' },
+    { name: 'Vận dụng cao', value: data.stats?.actual?.vdc ?? 0, color: '#ef4444' },
   ];
 
   const handleUpdate = (path: string, value: any) => {
@@ -25,6 +26,7 @@ export const AuditDashboard: React.FC<AuditDashboardProps> = ({ data: initialDat
     const keys = path.split('.');
     let current: any = newData;
     for (let i = 0; i < keys.length - 1; i++) {
+      if (!current[keys[i]]) current[keys[i]] = {};
       current = current[keys[i]];
     }
     current[keys[keys.length - 1]] = value;
@@ -62,7 +64,7 @@ export const AuditDashboard: React.FC<AuditDashboardProps> = ({ data: initialDat
                 type="text"
                 placeholder="Nhập họ và tên..."
                 className="w-full bg-white border border-blue-200 rounded-xl px-4 py-2 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                value={data.auditorName}
+                value={data.auditorName || ''}
                 onChange={(e) => handleUpdate('auditorName', e.target.value)}
               />
             </div>
@@ -103,7 +105,7 @@ export const AuditDashboard: React.FC<AuditDashboardProps> = ({ data: initialDat
             Phát hiện quan trọng
           </h3>
           <div className="space-y-3">
-            {data.warnings.map((w, i) => (
+            {data.warnings?.map((w, i) => (
               <div key={i} className={`p-4 rounded-xl border flex gap-3 text-sm font-semibold ${
                 w.type === 'error' ? 'bg-red-50 border-red-100 text-red-700' : 'bg-amber-50 border-amber-100 text-amber-700'
               }`}>
